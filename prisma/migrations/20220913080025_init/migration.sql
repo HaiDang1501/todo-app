@@ -1,11 +1,11 @@
 -- CreateTable
 CREATE TABLE "User" (
     "id" SERIAL NOT NULL,
-    "userName" VARCHAR(200),
-    "email" VARCHAR(100) NOT NULL,
-    "passWord" TEXT NOT NULL,
-    "createAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updateAt" TIMESTAMP(3) NOT NULL,
+    "username" VARCHAR,
+    "email" VARCHAR NOT NULL,
+    "password" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3),
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -13,10 +13,10 @@ CREATE TABLE "User" (
 -- CreateTable
 CREATE TABLE "Task" (
     "id" SERIAL NOT NULL,
-    "nameTask" VARCHAR(255) NOT NULL,
+    "nameTask" VARCHAR NOT NULL,
     "total" INTEGER NOT NULL DEFAULT 0,
-    "creatAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updateAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3),
     "userId" INTEGER NOT NULL,
 
     CONSTRAINT "Task_pkey" PRIMARY KEY ("id")
@@ -25,12 +25,13 @@ CREATE TABLE "Task" (
 -- CreateTable
 CREATE TABLE "SubTask" (
     "id" SERIAL NOT NULL,
-    "nameSubTask" VARCHAR(255) NOT NULL,
+    "nameSubTask" VARCHAR NOT NULL,
     "description" TEXT,
-    "deadline" TIMESTAMP,
-    "status" BOOLEAN NOT NULL DEFAULT false,
-    "creatAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updateAt" TIMESTAMP(3) NOT NULL,
+    "startDate" TIMESTAMP,
+    "dueDate" TIMESTAMP,
+    "status" BOOLEAN DEFAULT false,
+    "createdAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3),
     "taskId" INTEGER NOT NULL,
 
     CONSTRAINT "SubTask_pkey" PRIMARY KEY ("id")
@@ -40,7 +41,7 @@ CREATE TABLE "SubTask" (
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_passWord_key" ON "User"("passWord");
+CREATE UNIQUE INDEX "User_password_key" ON "User"("password");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Task_nameTask_key" ON "Task"("nameTask");

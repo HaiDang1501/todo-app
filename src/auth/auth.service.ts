@@ -8,19 +8,19 @@ import {
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
-import { ResponseObject } from './../utils/ResponseObject';
 import { JwtService } from '@nestjs/jwt';
-import { Tokens } from './types';
+import { TokenPayload, UserPayload } from './types';
 import { jwtSecret } from '../utils/constrants';
 import { Request, Response } from 'express';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
     constructor(private prisma: PrismaService, private jwt: JwtService) {}
 
-    async register(createUserDto: CreateUserDto): Promise<ResponseObject> {
+    async register(data: CreateUserDto): Promise<User> {
         try {
-            const { email, password, userName } = createUserDto;
+            const { email, password, username } = data;
             //find user has exist in database by email
             const userExist = await this.prisma.user.findUnique({
                 where: {
@@ -33,19 +33,14 @@ export class AuthService {
             const hashedPassword = await this.hashPassword(password);
 
             //Create new user
-            const user = await this.prisma.user.create({
+            const result = await this.prisma.user.create({
                 data: {
                     email,
-                    passWord: hashedPassword,
-                    userName,
+                    password: hashedPassword,
+                    username,
                 },
             });
-            return {
-                message: 'Register successfully',
-                status: 200,
-                success: true,
-                data: user,
-            };
+            return result;
         } catch (error) {
             if (error instanceof PrismaClientKnownRequestError) {
                 if (error.code === 'P2002') {
@@ -56,64 +51,68 @@ export class AuthService {
         }
     }
 
-    async login(authDto: AuthDto, req: Request, res: Response) {
-        const { email, password } = authDto;
+    async login(data: AuthDto, req: Request, res: Response) {
+        try {
+            const { email, password } = data;
 
-        //find user has exist in database by email
-        const userExist = await this.prisma.user.findUnique({
-            where: {
-                email,
-            },
-        });
-        if (!userExist) {
-            throw new BadRequestException('Wrong credentials');
-        }
+            //find user has exist in database by email
+            const userExist = await this.prisma.user.findUnique({
+                where: {
+                    email,
+                },
+            });
+            if (!userExist) {
+                throw new BadRequestException('Wrong credentials');
+            }
 
-        //compare password from input with password for this user in db
-        const comparedPassword = await this.comparePassword({
-            password,
-            hashPassword: userExist.passWord,
-        });
-        if (!comparedPassword) {
-            throw new BadRequestException('Wrong credentials');
-        }
+            //compare password from input with password for this user in db
+            const comparedPassword = await this.comparePassword({
+                password,
+                hashPassword: userExist.password,
+            });
+            if (!comparedPassword) {
+                throw new BadRequestException('Wrong credentials');
+            }
 
-        //sign JWT and return to the user
-        const token = await this.signToken(userExist.id, userExist.email);
-        if (!token) {
-            throw new ForbiddenException('Could not login');
+            //sign JWT and return to the user
+            const token = await this.signToken({
+                userId: userExist.id,
+                email: userExist.email,
+            });
+            if (!token) {
+                throw new ForbiddenException('Could not login');
+            }
+            res.cookie('token', token.access_token, {}); //set up cookie to send token from client
+            return res.send({
+                token: token.access_token,
+            });
+        } catch (error) {
+            throw error;
         }
-        res.cookie('token', token, {}); //set up cookie to send token from client
-        return res.send({ message: 'Logged in successfully' });
     }
 
     async logout(req: Request, res: Response) {
-        console.log(req.user);
         res.clearCookie('token');
         return res.send({ message: 'Logged out successfully' });
     }
 
     async hashPassword(password: string): Promise<string> {
         const saltOrRounds = 10;
-        return await bcrypt.hash(password, saltOrRounds);
+        return bcrypt.hash(password, saltOrRounds);
     }
 
     async comparePassword(args: {
         password: string;
         hashPassword: string;
     }): Promise<boolean> {
-        return await bcrypt.compare(args.password, args.hashPassword);
+        return bcrypt.compare(args.password, args.hashPassword);
     }
 
-    async signToken(userId: number, email: string): Promise<Tokens> {
-        const payload = {
-            id: userId,
-            email: email,
-        };
+    async signToken(user: UserPayload): Promise<TokenPayload> {
         return {
-            access_token: await this.jwt.signAsync(payload, {
+            access_token: await this.jwt.signAsync(user, {
                 secret: jwtSecret,
-                expiresIn: '60s',
+                expiresIn: '1d',
             }),
         };
     }

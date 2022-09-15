@@ -7,35 +7,32 @@ import {
     Get,
     Post,
     Req,
+    Request,
     Res,
+    Response,
     UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { User } from '@prisma/client';
 import { GetUser } from './decorator';
-import { JwtAuthGuard } from './jwt.guard';
+import { JwtAuthGuard } from './guard';
 
 @Controller('auth')
 export class AuthController {
     constructor(private readonly authService: AuthService) {}
 
     @Post('register')
-    register(@Body() createUserDto: CreateUserDto): Promise<ResponseObject> {
-        return this.authService.register(createUserDto);
+    async register(@Body() data: CreateUserDto): Promise<User> {
+        return this.authService.register(data);
     }
 
     @Post('login')
-    login(@Body() authDto: AuthDto, @Req() req, @Res() res) {
-        return this.authService.login(authDto, req, res);
+    async login(@Body() data: AuthDto, @Request() req, @Response() res) {
+        return this.authService.login(data, req, res);
     }
 
     @Get('logout')
-    logout(@Req() req, @Res() res) {
+    async logout(@Req() req, @Res() res) {
         return this.authService.logout(req, res);
-    }
-    @UseGuards(JwtAuthGuard)
-    @Get('me')
-    getMe(@GetUser() user: User) {
-        return user;
     }
 }

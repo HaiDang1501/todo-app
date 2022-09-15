@@ -11,34 +11,35 @@ datasource db {
 }
 
 model User {
-  id       Int      @id @default(autoincrement())
-  userName String?  @db.VarChar(200)
-  email    String   @unique @db.VarChar(100)
-  passWord String   @unique
-  createAt DateTime @default(now())
-  updateAt DateTime @updatedAt
-  tasks    Task[]   @relation("task_user_userId")
+  id        Int       @id @default(autoincrement())
+  username  String?   @db.VarChar()
+  email     String    @unique @db.VarChar()
+  password  String    @unique
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  tasks     Task[]    @relation("task_user_userId")
 }
 
 model Task {
-  id       Int       @id @default(autoincrement())
-  nameTask String    @unique @db.VarChar(255)
-  total    Int       @default(0)
-  creatAt  DateTime  @default(now())
-  updateAt DateTime  @updatedAt
-  subTasks SubTask[] @relation("subTask_task_taskId")
-  userId   Int
-  user     User      @relation(fields: [userId], references: [id], name: "task_user_userId", onDelete: Cascade)
+  id        Int       @id @default(autoincrement())
+  nameTask  String    @unique @db.VarChar()
+  total     Int       @default(0)
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  subTasks  SubTask[] @relation("subTask_task_taskId")
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id], name: "task_user_userId", onDelete: Cascade)
 }
 
 model SubTask {
   id          Int       @id @default(autoincrement())
-  nameSubTask String    @unique @db.VarChar(255)
+  nameSubTask String    @unique @db.VarChar()
   description String?   @db.Text
-  deadline    DateTime? @db.Timestamp()
-  status      Boolean   @default(false)
-  creatAt     DateTime  @default(now())
-  updateAt    DateTime  @updatedAt
+  startDate   DateTime? @db.Timestamp()
+  dueDate     DateTime? @db.Timestamp()
+  status      Boolean?  @default(false)
+  createdAt   DateTime? @default(now())
+  updatedAt   DateTime? @updatedAt
   taskId      Int
   task        Task      @relation(fields: [taskId], references: [id], name: "subTask_task_taskId", onDelete: Cascade)
 }

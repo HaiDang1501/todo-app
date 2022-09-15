@@ -1,3 +1,2 @@
-export type Tokens = {
-    access_token: string;
-};
+export * from './tokenPayload';
+export * from './userPayload';
