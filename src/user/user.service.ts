@@ -1,5 +1,6 @@
 import { UpdateUserDto } from './dto/updateUser.dto';
 import {
+    BadRequestException,
     ForbiddenException,
     Injectable,
     NotFoundException,
@@ -66,6 +67,9 @@ export class UserService {
                     },
                 },
             });
+            if (result === null) {
+                throw new BadRequestException('data not exists');
+            }
             return result;
         } catch (error) {
             throw error;

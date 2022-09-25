@@ -47,7 +47,7 @@ export class SubtaskController {
         return this.subtaskService.update(id, data);
     }
 
-    @Put('status/:id')
+    @Put(':id/status') // ':id/status'
     async updateStatus(
         @Param('id', ParseIntPipe) id: number,
     ): Promise<SubTask> {

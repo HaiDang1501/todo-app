@@ -18,7 +18,7 @@ export class GetUserTasksDto {
     @Exclude()
     updatedAt: Date;
 
-    @Expose()
+    @Exclude({ toPlainOnly: true })
     tasks: Task[];
 
     @Expose()

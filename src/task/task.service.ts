@@ -1,7 +1,11 @@
 import { UpdateTaskDto } from './dto';
 import { CreateTaskDto } from './dto/createTask.dto';
 import { ResponseObject } from './../utils/ResponseObject';
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+    BadRequestException,
+    ForbiddenException,
+    Injectable,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Task } from '@prisma/client';
 
@@ -66,7 +70,7 @@ export class TaskService {
 
     async getTaskById(id: number): Promise<Task> {
         try {
-            const result = await this.prisma.task.findFirst({
+            const result = await this.prisma.task.findUnique({
                 where: {
                     id: id,
                 },
@@ -74,6 +78,10 @@ export class TaskService {
                     subTasks: true,
                 },
             });
+            if (result === null) {
+                throw new BadRequestException('data not exists');
+            }
+            console.log(result);
             return result;
         } catch (error) {
             throw error;

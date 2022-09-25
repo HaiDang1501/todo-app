@@ -1,7 +1,7 @@
 import { SubTask } from '@prisma/client';
 import { jwtSecret } from 'src/utils/constrants';
 import { PrismaService } from './../../prisma/prisma.service';
-import { Injectable, UseGuards } from '@nestjs/common';
+import { BadRequestException, Injectable, UseGuards } from '@nestjs/common';
 import { ResponseObject } from 'src/utils/ResponseObject';
 import { CreateSubTaskDto, UpdateSubTaskDto } from './dto';
 import { JwtAuthGuard } from 'src/auth/guard';
@@ -87,14 +87,10 @@ export class SubtaskService {
                 where: {
                     taskId: TaskId,
                 },
-                // include: {
-                //     task: {
-                //         select: {
-                //             nameTask: true,
-                //         },
-                //     },
-                // },
             });
+            if (result === null) {
+                throw new BadRequestException('data not exists');
+            }
             return result;
         } catch (error) {
             throw error;
